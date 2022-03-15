@@ -19,8 +19,21 @@ const userController = {
       });
   },
 
-  login: (req, res) => {
-    res.send("oi");
+  login: async (req, res) => {
+    const selectedUser = await User.findOne({ email: req.body.email });
+    if (!selectedUser) {
+      return res.status(400).send("Email or password is incorrect");
+    }
+
+    const passwordAndUserMatch = bcrypt.compareSync(
+      req.body.password,
+      selectedUser.password
+    );
+    if (!passwordAndUserMatch) {
+      return res.status(400).send("Email or password is incorrect");
+    }
+
+    res.send("User Logged");
   },
 };
 
