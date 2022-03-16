@@ -6,11 +6,9 @@ const mongoose = require("mongoose");
 const adminRouter = require("./routes/adminRouter");
 
 mongoose.connect(process.env.MONGO_CONNECTION_URL, (err) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Connected to database");
-  }
+  if (err) return console.log(err);
+
+  console.log("Connected to database");
 });
 
 app.use("/user", express.json(), userRouter);

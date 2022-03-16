@@ -2,8 +2,13 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const { loginValidate, registerValidate } = require("./validate");
+
 const userController = {
   register: (req, res) => {
+    const { error } = registerValidate(req.body);
+    if (error) return res.status(400).send(error.message);
+
     const user = new User({
       name: req.body.name,
       email: req.body.email,
@@ -21,16 +26,14 @@ const userController = {
   },
 
   login: async (req, res) => {
-    const selectedUser = await User.findOne({ email: req.body.email });
-    if (!selectedUser)
-      return res.status(400).send("Email or password is incorrect");
+    const { error } = loginValidate(req.body);
+    if (error) return res.status(400).send(error.message);
 
-    const passwordAndUserMatch = bcrypt.compareSync(
-      req.body.password,
-      selectedUser.password
-    );
-    if (!passwordAndUserMatch)
-      return res.status(400).send("Email or password is incorrect");
+    const selectedUser = await User.findOne({ email: req.body.email });
+    if (!selectedUser) return res.status(400).send("Email or password is incorrect");
+
+    const passwordAndUserMatch = bcrypt.compareSync(req.body.password, selectedUser.password);
+    if (!passwordAndUserMatch) return res.status(400).send("Email or password is incorrect");
 
     const token = jwt.sign(
       { _id: selectedUser._id, admin: selectedUser.admin },
