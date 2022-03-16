@@ -16,25 +16,26 @@ const userController = {
         res.send(doc);
       })
       .catch((err) => {
-        res.status(400).send("Email already exists");
+        res.status(400).send(err.message);
       });
   },
 
   login: async (req, res) => {
     const selectedUser = await User.findOne({ email: req.body.email });
-    if (!selectedUser) {
+    if (!selectedUser)
       return res.status(400).send("Email or password is incorrect");
-    }
 
     const passwordAndUserMatch = bcrypt.compareSync(
       req.body.password,
       selectedUser.password
     );
-    if (!passwordAndUserMatch) {
+    if (!passwordAndUserMatch)
       return res.status(400).send("Email or password is incorrect");
-    }
 
-    const token = jwt.sign({ _id: selectedUser._id }, process.env.TOKEN_SECRET);
+    const token = jwt.sign(
+      { _id: selectedUser._id, admin: selectedUser.admin },
+      process.env.TOKEN_SECRET
+    );
 
     res.header("authoriztion-token", token);
     res.send("User Logged");
